@@ -692,6 +692,7 @@ static int macb_mdiobus_register(struct macb *bp)
 
 static int macb_mii_init(struct macb *bp)
 {
+	struct device_node *np = bp->pdev->dev.of_node;
 	int err = -ENXIO;
 
 	/* Enable management port */
@@ -713,9 +714,17 @@ static int macb_mii_init(struct macb *bp)
 
 	dev_set_drvdata(&bp->dev->dev, bp->mii_bus);
 
-	err = macb_mdiobus_register(bp);
-	if (err)
-		goto err_out_free_mdiobus;
+	if (of_phy_is_fixed_link(np)) {
+		err = of_phy_register_fixed_link(np);
+		if (err) {
+			netdev_err(bp->dev, "cannot register fixed-link PHY\n");
+			goto err_out_free_mdiobus;
+		}
+	} else {
+		err = macb_mdiobus_register(bp);
+		if (err)
+			goto err_out_free_mdiobus;
+	}
 
 	err = macb_mii_probe(bp->dev);
 	if (err)

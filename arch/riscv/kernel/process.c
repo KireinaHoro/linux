@@ -65,7 +65,7 @@ void show_regs(struct pt_regs *regs)
 void start_thread(struct pt_regs *regs, unsigned long pc,
 	unsigned long sp)
 {
-	regs->status = SR_PIE;
+	regs->status = SR_PIE | SR_XS_INITIAL;
 	if (has_fpu) {
 		regs->status |= SR_FS_INITIAL;
 		/*
